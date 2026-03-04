@@ -10,8 +10,6 @@ CPU_COUNTS = 1
 
 class ProcessSimulation:
     def __init__(self, interval, process, ram, cpu_speed, cpu_count):
-        random.seed(RANDOM_SEED)
-
         self.interval = interval
         self.process = process
         self.env = simpy.Environment()
@@ -52,10 +50,7 @@ class ProcessSimulation:
                 event = random.randint(1, 21)
 
                 if event == 1:
-                    yield self.env.timeout(1)
-
-                elif event == 2:
-                    yield self.env.timeout(0)
+                    yield self.env.timeout(random.randint(1, 5))
 
         yield self.ram.put(ram_needed)
 
@@ -63,14 +58,16 @@ class ProcessSimulation:
         self.result.append(total_time)
 
 def experiments():
+    random.seed(RANDOM_SEED)
+
     process_count = [25, 50, 100, 150, 200]
     intervals = [10, 5, 1]
 
     strategies = {
         "Base": {"ram": TOTAL_RAM, "cpu_speed": 3, "cpu_count": 1},
         "More_RAM": {"ram": TOTAL_RAM * 2, "cpu_speed": 3, "cpu_count": 1}, 
-        "Better_cpu": {"ram": TOTAL_RAM, "cpu_speed": 6, "cpu_count": 1},
-        "More_CPU": {"ram": TOTAL_RAM, "cpu_speed": 3, "cpu_count": 2},
+        "Better_CPU": {"ram": TOTAL_RAM, "cpu_speed": 6, "cpu_count": 1},
+        "More_Threads": {"ram": TOTAL_RAM, "cpu_speed": 3, "cpu_count": 2},
     }
 
     for name, param in strategies.items():
@@ -79,7 +76,7 @@ def experiments():
             average = []
             deviation = []
 
-            print(f"\n Intervalo = {interval} - Estrategia: {name}")
+            print(f"\nIntervalo = {interval} - Estrategia: {name}")
 
             for count in process_count:
                 sim = ProcessSimulation(interval, 
@@ -98,7 +95,7 @@ def experiments():
 
             plt.figure()
             plt.errorbar(process_count, average, yerr=deviation, marker='o')
-            plt.title(f"{name} | Intervalo = {interval}")
+            plt.title(f"Metodo: {name} | Intervalo = {interval}")
             plt.xlabel("Cantidad de Procesos")
             plt.ylabel("Tiempo Promedio")
             plt.grid(True)
